@@ -1,0 +1,47 @@
+version: '3.2'
+
+services:
+  web:
+    image: romeoz/docker-apache-php:5.6
+    volumes:
+      - ~/.composer-docker/cache:/root/.composer/cache:delegated
+      - .:/var/www/app:delegated
+    ports:
+      - 7080:80
+    restart: unless-stopped
+    depends_on:
+      - mariadb
+
+  mariadb:
+    image: mariadb:10.3
+    volumes:
+      - apps_persistent:/var/lib/mysql
+    ports:
+      - 7006:3306
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Jakarta
+      - MYSQL_ROOT_PASSWORD=admin_db
+      - MYSQL_DATABASE=apps_docker
+
+  # sftp:
+  #   image: atmoz/sftp
+  #   volumes:
+  #       - /root/Git/app-request:/home/app-request
+  #   ports:
+  #       - "7022:22"
+  #   command: ddaonline:app-request!!:1001:::/home/app-request
+  #   restart: unless-stopped
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    depends_on:
+      - mariadb
+    ports:
+      - 7081:80
+    restart: unless-stopped
+    environment:
+      - PMA_HOST=mariadb
+
+volumes:
+  apps_persistent:
